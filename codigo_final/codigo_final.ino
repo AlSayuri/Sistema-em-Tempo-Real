@@ -21,7 +21,8 @@
         const uint8_t rele_luz = 8; /*pino do rele da luz*/
     /*Fim Luz*/
     /*Irrigação*/
-        const uint8_t rele_umidade_solo = A5; /*pino do rele da bomba de água*/
+        const uint8_t rele_bomba = 7; /*pino do rele da bomba de água*/
+        const uint8_t sensor_umidade = A5; /*pino do rele da bomba de água*/
         uint16_t v_umidade_solo; /*2 byte*/
     /*Fim Irrigação*/
     /*Cooler*/
@@ -49,10 +50,10 @@
               
                 /*if para ligar ou desligar a luz*/
                     if (h == 7 && m == 00 && s == 1){
-                        digitalWrite(rele_luz, HIGH); // Ligar a luz
+                        digitalWrite(rele_luz, LOW); // Liga a luz
                     }
                     else if(h == 17 && m == 00 && s == 1){
-                        digitalWrite(rele_luz, LOW); // Desligar a luz
+                        digitalWrite(rele_luz, HIGH); // Desliga a luz
                     }
                 /*Fim if para ligar ou desligar a luz*/
                 
@@ -96,29 +97,29 @@
                 /*Fim if para o Cooler*/ 
 
                 /*Umidade do solo*/
-                    v_umidade_solo = analogRead(rele_umidade_solo); //Recebe o valor do sensdor de umidade de solo
+                    v_umidade_solo = analogRead(sensor_umidade); //Recebe o valor do sensdor de umidade de solo
                     /*nível de umidade do solo*/
                         //Solo umido
                         if (v_umidade_solo > 0 && v_umidade_solo < 400){
-                            digitalWrite(rele_umidade_solo, HIGH); // Liga bomba de água
+                            digitalWrite(rele_bomba, HIGH); // Liga bomba de água
                             if(s == 10){
-                                digitalWrite(rele_umidade_solo, LOW); // Desliga bomba de água
+                                digitalWrite(rele_bomba, LOW); // Desliga bomba de água
                                 nilSemSignal(&sem_geral); // volta para a primeira thread
                             }
                         }
                         //Solo com umidade moderada
                         else if (v_umidade_solo > 400 && v_umidade_solo < 800){
-                            digitalWrite(rele_umidade_solo, HIGH); // Liga bomba de água
+                            digitalWrite(rele_bomba, HIGH); // Liga bomba de água
                             if(s == 14){
-                              digitalWrite(rele_umidade_solo, LOW); // Desliga bomba de água
+                              digitalWrite(rele_bomba, LOW); // Desliga bomba de água
                               nilSemSignal(&sem_geral); // volta para a primeira thread
                             }
                         }
                         //Solo seco
                         else if (v_umidade_solo > 800 && v_umidade_solo < 1024){
-                            digitalWrite(rele_umidade_solo, HIGH); // Liga bomba de água
+                            digitalWrite(rele_bomba, HIGH); // Liga bomba de água
                             if(s == 17){
-                              digitalWrite(rele_umidade_solo, LOW); // Desliga bomba de água
+                              digitalWrite(rele_bomba, LOW); // Desliga bomba de água
                               nilSemSignal(&sem_geral); // volta para a primeira thread
                             }
                         }
@@ -140,9 +141,9 @@
               s++;
               func_horas();
               Serial.println("Thread3 - Cooler");
-              digitalWrite(rele_cooler, HIGH); // Liga cooler
+              digitalWrite(rele_cooler, LOW); // Liga cooler
               if(s == 50){
-                  digitalWrite(rele_cooler, LOW); // Desliga cooler
+                  digitalWrite(rele_cooler, HIGH); // Desliga cooler
                   nilSemSignal(&sem_geral); // volta para a primeira thread
               } 
           }
@@ -177,9 +178,12 @@ void setup() {
   // start kernel
   nilSysBegin();
 
-  pinMode(rele_umidade_solo, INPUT);
+  pinMode(sensor_umidade, INPUT);
   pinMode(rele_cooler, OUTPUT);
   pinMode(rele_luz, OUTPUT);
+  pinMode(rele_bomba, OUTPUT);
+  digitalWrite(rele_cooler, HIGH);
+  digitalWrite(rele_luz, HIGH);
 
 }
 //------------------------------------------------------------------------------

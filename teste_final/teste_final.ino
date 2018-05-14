@@ -14,14 +14,15 @@
 /*Declaração das variáveis globais*/
     /*Horas*/
         uint8_t h = 10;  /*horas;      - 1 byte*/
-        uint8_t m = 59;  /*minutos;    - 1 byte*/
-        uint8_t s = 55;  /*segundos;   - 1 byte*/
+        uint8_t m = 0;  /*minutos;    - 1 byte*/
+        uint8_t s = 0;  /*segundos;   - 1 byte*/
     /*Fim Horas*/
     /*Luz*/
         const uint8_t rele_luz = 8; /*pino do rele da luz*/
     /*Fim Luz*/
     /*Irrigação*/
-        const uint8_t rele_umidade_solo = A5; /*pino do rele da bomba de água*/
+        const uint8_t rele_bomba = 7; /*pino do rele da bomba de água*/
+        const uint8_t sensor_umidade = A5; /*pino do rele da bomba de água*/
         uint16_t v_umidade_solo; /*2 byte*/
     /*Fim Irrigação*/
     /*Cooler*/
@@ -49,11 +50,11 @@
               
                 /*if para ligar ou desligar a luz*/
                     if (h == 10 && m == 00 && s == 5){
-                        digitalWrite(rele_luz, HIGH);
+                        digitalWrite(rele_luz, LOW);
                         Serial.println("===> luz ligado");
                     }
                     else if(h == 10 && m == 00 && s == 15){
-                        digitalWrite(rele_luz, LOW);
+                        digitalWrite(rele_luz, HIGH);
                         Serial.println("===> luz desligado");
                     }
                 /*Fim if para ligar ou desligar a luz*/
@@ -96,15 +97,16 @@
                 /*Fim if para o Cooler*/ 
 
                 /*Umidade do solo*/
-                    //v_umidade_solo = analogRead(rele_umidade_solo);/*recebe o valor do sensdor de umidade de solo*/
+                    //v_umidade_solo = analogRead(sensor_umidade);/*recebe o valor do sensdor de umidade de solo*/
                     v_umidade_solo = 100;
                     /*nível de umidade do solo*/
                         //Solo umido
                         if (v_umidade_solo > 0 && v_umidade_solo < 400){
                             Serial.println("Solo umido");
-                            digitalWrite(rele_umidade_solo, HIGH);
+                            digitalWrite(rele_bomba, HIGH);
                             Serial.println("===> bomba ligado");
                             if(s == 25){
+                                digitalWrite(rele_bomba, LOW);
                                 Serial.println("===> bomba desligado");
                                 nilSemSignal(&sem_geral); // volta para a primeira thread
                             }
@@ -112,7 +114,7 @@
                         //Solo com umidade moderada
                         else if (v_umidade_solo > 400 && v_umidade_solo < 800){
                             Serial.println("Solo moderado");
-                            digitalWrite(rele_umidade_solo, HIGH);
+                            digitalWrite(rele_bomba, HIGH);
                             Serial.println("bomba ligado");
                             if(s == 8){
                               Serial.println("bomba desligado");
@@ -122,7 +124,7 @@
                         //Solo seco
                         else if (v_umidade_solo > 800 && v_umidade_solo < 1024){
                             Serial.println("Solo seco");
-                            digitalWrite(rele_umidade_solo, HIGH);
+                            digitalWrite(rele_bomba, HIGH);
                             Serial.println("bomba ligado");
                             if(s == 10){
                               Serial.println("bomba desligado");
@@ -149,11 +151,11 @@
               
               Serial.println("Thread3 - Cooler");
               
-              digitalWrite(rele_cooler, HIGH);
+              digitalWrite(rele_cooler, LOW);
               
               Serial.println("===> Cooler ligado");
               if(s == 50){
-                  digitalWrite(rele_cooler, LOW);
+                  digitalWrite(rele_cooler, HIGH);
                   Serial.println("===> Cooler desligado");
                   nilSemSignal(&sem_geral); // volta para a primeira thread
               } 
@@ -189,10 +191,12 @@ void setup() {
   // start kernel
   nilSysBegin();
 
-  pinMode(rele_umidade_solo, INPUT);
+  pinMode(sensor_umidade, INPUT);
   pinMode(rele_cooler, OUTPUT);
   pinMode(rele_luz, OUTPUT);
-
+  pinMode(rele_bomba, OUTPUT);
+  digitalWrite(rele_cooler, HIGH);
+  digitalWrite(rele_luz, HIGH);
 }
 //------------------------------------------------------------------------------
 // Loop é o encadeamento inativo.  O encadeamento inativo não deve invocar nenhum
