@@ -13,8 +13,8 @@
 /*------------------------------------------------------------------------------
 /*Declaração das variáveis globais*/
     /*Horas*/
-        uint8_t h = 0;  /*horas;      - 1 byte*/
-        uint8_t m = 0;  /*minutos;    - 1 byte*/
+        uint8_t h = 22;  /*horas;      - 1 byte*/
+        uint8_t m = 30;  /*minutos;    - 1 byte*/
         uint8_t s = 0;  /*segundos;   - 1 byte*/
     /*Fim Horas*/
     /*Luz*/
@@ -49,21 +49,21 @@
                 Serial.println("Thread1 - Luz = principal");
               
                 /*if para ligar ou desligar a luz*/
-                    if (h == 7 && m == 00 && s == 1){
+                    if (h == 19 && m == 00 && s == 1){
                         digitalWrite(rele_luz, LOW); // Liga a luz
                     }
-                    else if(h == 17 && m == 00 && s == 1){
+                    else if(h == 6 && m == 00 && s == 1){
                         digitalWrite(rele_luz, HIGH); // Desliga a luz
                     }
                 /*Fim if para ligar ou desligar a luz*/
                 
                 /*if para Irrigação ou cooler*/
-                      if (( h == 7  && m == 30 && s == 1 ) || // Para a irrigação - 07:30:01
-                          ( h == 13 && m == 30 && s == 1 ) || // Para a irrigação - 12:30:01
-                          ( h == 19 && m == 30 && s == 1 ) || // Para a irrigação - 19:30:01
+                      if (( h == 7  && m == 0  && s == 1 ) || // Para a irrigação - 07:00:01
+                          ( h == 14 && m == 30 && s == 1 ) || // Para a irrigação - 14:30:01
+                          ( h == 20 && m == 30 && s == 1 ) || // Para a irrigação - 20:30:01
                           ( h == 10 && m == 15 && s == 1 ) || // Para o cooler    - 10:15:01
-                          ( h == 14 && m == 15 && s == 1 ) || // Para o cooler    - 14:15:01
-                          ( h == 20 && m == 15 && s == 1 )    // Para o cooler    - 20:15:01
+                          ( h == 15 && m == 15 && s == 1 ) || // Para o cooler    - 15:15:01
+                          ( h == 22 && m == 15 && s == 1 )    // Para o cooler    - 22:15:01
                           ){
                               nilSemWait(&sem_geral); // Vai para a segunda Thread (irrigação)
                       }
@@ -89,8 +89,8 @@
                                 
                 /*if para o Cooler*/
                     if (( h == 10 && m == 15 && s == 1 ) || // 10:15:01
-                        ( h == 14 && m == 15 && s == 1 ) || // 10:15:01
-                        ( h == 20 && m == 15 && s == 1 )    // 20:15:01
+                        ( h == 15 && m == 15 && s == 1 ) || // 15:15:01
+                        ( h == 22 && m == 15 && s == 1 )    // 22:15:01
                         ){
                             nilSemWait(&sem_cool); // Vai para a Thread 3 (cooler)
                     }
@@ -102,7 +102,7 @@
                         //Solo umido
                         if (v_umidade_solo > 0 && v_umidade_solo < 400){
                             digitalWrite(rele_bomba, HIGH); // Liga bomba de água
-                            if(s == 10){
+                            if(s == 5){
                                 digitalWrite(rele_bomba, LOW); // Desliga bomba de água
                                 nilSemSignal(&sem_geral); // volta para a primeira thread
                             }
@@ -110,7 +110,7 @@
                         //Solo com umidade moderada
                         else if (v_umidade_solo > 400 && v_umidade_solo < 800){
                             digitalWrite(rele_bomba, HIGH); // Liga bomba de água
-                            if(s == 14){
+                            if(s == 8){
                               digitalWrite(rele_bomba, LOW); // Desliga bomba de água
                               nilSemSignal(&sem_geral); // volta para a primeira thread
                             }
@@ -118,7 +118,7 @@
                         //Solo seco
                         else if (v_umidade_solo > 800 && v_umidade_solo < 1024){
                             digitalWrite(rele_bomba, HIGH); // Liga bomba de água
-                            if(s == 17){
+                            if(s == 11){
                               digitalWrite(rele_bomba, LOW); // Desliga bomba de água
                               nilSemSignal(&sem_geral); // volta para a primeira thread
                             }
@@ -183,7 +183,7 @@ void setup() {
   pinMode(rele_luz, OUTPUT);
   pinMode(rele_bomba, OUTPUT);
   digitalWrite(rele_cooler, HIGH);
-  digitalWrite(rele_luz, HIGH);
+  digitalWrite(rele_luz, LOW);
 
 }
 //------------------------------------------------------------------------------
