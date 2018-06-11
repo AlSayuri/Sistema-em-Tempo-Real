@@ -25,15 +25,16 @@
     /*Fim Variáveis de Controle*/
 /*Fim Declaração das variáveis globais*/
 
+
+
 /*Tarefas*/
-    /*--------------------------------------------------------*/
-    /* Primeira Tarefa   - Irrigação*/
+  /*--------------------------------------------------------*/
+  /* Primeira Tarefa   - Irrigação*/
         // Declaração de pilha com 64 bytes além do necessário para o contexo de troca e interrupção
         NIL_WORKING_AREA(waThread1, 64);
 
         // Declaração da função de thread para a thread 2
         NIL_THREAD(Thread1, arg) {
-            //nilTimer1Start(3000000); /*tempo de de execução Ex. 1000000 = 1 segundo*/
             while (TRUE) {
                 Serial.println("Thread1 - Irrigação");
                 /*Umidade do solo*/
@@ -42,58 +43,50 @@
                     /*nível de umidade do solo*/
                         //Solo umido
                         if (v_umidade_solo > 0 && v_umidade_solo < 400){
+                            Serial.println("====> Bomba Ligada");
                             digitalWrite(rele_bomba, LOW); // Liga bomba de água
-                            //DELAY por 5000 milisegundos = 5 segundos.   
-                            //nilThdDelayMilliseconds(5000);
-                            nilTimer1Start(5000000);
-                            nilTimer1Wait();
+                            Serial.println("Espera 5 segundos");
+                            //DELAY por 5000000 microsegundos = 5 segundos.
+                            esperar(5);
+                            Serial.println("====> Bomba Desligada");
                             digitalWrite(rele_bomba, HIGH); // Desliga bomba de água
-                            nilTimer1Start(5000000);
-                            //DELAY por 3595000 milisegundos = 3595 segundos. 
-                            // para que o if delay por uma hora  
-                            //nilThdDelayMilliseconds(3595000);
-                            //nilThdDelayMilliseconds(10000);
-                            nilTimer1Wait();
+                            Serial.println("Espera 3595 segundos para dar 1 hora");
+                            esperar(3595);
                         }
                         //Solo com umidade moderada
                         else if (v_umidade_solo > 400 && v_umidade_solo < 800){
                             digitalWrite(rele_bomba, LOW); // Liga bomba de água
-                            //DELAY por 8000 milisegundos = 8 segundos.   
-                            //nilThdDelayMilliseconds(8000);
-                            nilThdSleepMilliseconds(500);
+                            //DELAY por 8000000 microsegundos = 8 segundos. 
+                            esperar(8);  
                             digitalWrite(rele_bomba, HIGH); // Desliga bomba de água
                             //DELAY por 3592000 milisegundos = 3592 segundos. 
-                            // para que o if DELAY por uma hora    
-                            //nilThdDelayMilliseconds(3592000);
-                            nilThdSleepMilliseconds(500);
+                            esperar(3592); // para dar uma hora
                         }
                         //Solo seco
                         else if (v_umidade_solo > 800 && v_umidade_solo < 1024){
                             digitalWrite(rele_bomba, LOW); // Liga bomba de água
-                            //Sleep por 10000 milisegundos = 10 segundos.   
-                            //nilThdDelayMilliseconds(10000);
-                            nilThdSleepMilliseconds(500);
+                            //DELAY por 10000000 microsegundos = 10 segundos.   
+                            esperar(10);
                             digitalWrite(rele_bomba, HIGH); // Desliga bomba de água
-                            //DELAY por 3590000 milisegundos = 3590 segundos. 
-                            // para que o if DELAY por uma hora 
-                            nilThdSleepMilliseconds(500);
-                            //nilThdDelayMilliseconds(3590000);
+                            //DELAY por 3590000000 milisegundos = 3590 segundos. 
+                            esperar(3590); // para dar uma hora
                         }
                 /*Fim Umidade do solo*/
                 if (controle == 0){ /*´primeira vez que passar em cada período*/
                   nilSemWait(&sem_geral); /*vai para a tarefa de Luz*/
+                  esperar(3600);
                 }
                 else{ /*segunda vez que passar em cada período pq não vai pra tarefa de luz*/
-                   /*DELAY por 18000000 milisegundos = 5 horas. */
+                   /*DELAY por 18000000 microsegundos = 5 horas. */
+                   Serial.println("==> Não vai para thread 02");
+                   Serial.println("Espera por 5 segundos");
+                   //DELAY por 5000000 microsegundos = 5 segundos.
+                   esperar(5);
                    controle = 0;
-                   //nilThdDelayMilliseconds(18000000);
-                   nilTimer1Start(10000000);
-                   nilTimer1Wait();
-                   //nilThdDelayMilliseconds(10000);
                 }
             }
         }
-  /* Fim primeira Tarefa*/
+  /* Fim primeira Tarefa*/ 
   /*--------------------------------------------------------*/
   /* Segunda Tarefa   - Luz*/
         // Declaração de pilha com 64 bytes além do necessário para o contexo de troca e interrupção
@@ -102,8 +95,6 @@
         // Declaração da função de thread para a thread 1
         NIL_THREAD(Thread2, arg) {
             Serial.println("Thread2 - luz");
-            //nilTimer1Start(10000000); /*tempo de de execução Ex. 1000000 = 1 segundo*/
-            nilTimer1Start(10000000);
             while (TRUE) {
                 Serial.println("Thread2 - luz");
                 /*if para ligar ou desligar a luz*/
@@ -118,30 +109,28 @@
                     estado_luz = 0;
                 }
                 /*fim if para ligar ou desligar a luz*/
-                /*Sleep por 3600000 milisegundos = 1 hora. */
-                //nilThdDelayMilliseconds(3600000);
-                //nilThdDelayMilliseconds(10000);
-                nilTimer1Wait();
+                /*Delay por 3600000000 milisegundos = 3600 segundos = 1 hora*/
+                esperar(3600);
                 controle = 1;
                 nilSemSignal(&sem_geral); // volta para a primeira thread (irrigação)      
             }
         }
     /* Fim Segunda Tarefa*/
-
+  /*--------------------------------------------------------*/
 /*Fim Tarefas*/
 
 /*------------------------------------------------------------------------------*/
 /*Prioridades de Tarefas*/
   /*
-  * Tabela estática de Threads, uma entrada por Thread.  Uma prioridade de Thread é
-  * determinado por sua posição na tabela com maior prioridade primeiro.
+  * Threads static table, one entry per thread.  A thread's priority is
+  * determined by its position in the table with highest priority first.
   *
-  * Essas Threads começam com argumento nulo. Um nome de Thread é também
-  * nulo para salvar a RAM já que o nome não é usado.
+  * These threads start with a null argument.  A thread's name is also
+  * null to save RAM since the name is currently not used.
   */
   NIL_THREADS_TABLE_BEGIN()
-  NIL_THREADS_TABLE_ENTRY(NULL, Thread1, NULL, waThread1, sizeof(waThread1))
-  NIL_THREADS_TABLE_ENTRY(NULL, Thread2, NULL, waThread2, sizeof(waThread2))
+    NIL_THREADS_TABLE_ENTRY(NULL, Thread1, NULL, waThread1, sizeof(waThread1))
+    NIL_THREADS_TABLE_ENTRY(NULL, Thread2, NULL, waThread2, sizeof(waThread2))
   NIL_THREADS_TABLE_END()
 /*Fim Prioridades de Tarefas*/
 /*------------------------------------------------------------------------------*/
@@ -162,9 +151,44 @@ void setup() {
   digitalWrite(rele_bomba, HIGH);
 }
 //------------------------------------------------------------------------------
-// Loop é o encadeamento inativo.  O encadeamento inativo não deve invocar nenhum
-// kernel primitivo capaz de mudar seu estado para não executável.
+// Loop is the idle thread.  The idle thread must not invoke any
+// kernel primitive able to change its state to not runnable.
 void loop() {
-  // Não é usado
+  // Not used
 }
+
+void esperar(int segundos){ // Microsegundos
+  // irrigação - Solo umido
+    if (segundos == 5){ // 5 segundos
+      nilTimer1Start(5000000); 
+    }
+    else if (segundos == 3595){ // 3595 segundos
+      nilTimer1Start(3595000000);
+    }
+  // fim irrigação - Solo umido
+  // irrigação -  umidade moderada
+    else if (segundos == 8){ // 8 segundos
+      nilTimer1Start(8000000);
+    }
+    else if (segundos == 3592){ // 3592 segundos
+      nilTimer1Start(3592000000);
+    }
+  // fim - irrigação -  umidade moderada
+  // irrigação - solo seco
+    else if (segundos == 10){
+      nilTimer1Start(10000000);
+    }
+    else if (segundos == 3590){
+      nilTimer1Start(3590000000);
+    }
+  // fim irrigação - solo seco
+  // luz
+    else if (segundos == 3600){
+      nilTimer1Start(3600000000);
+    }
+  // fim luz
+  
+  nilTimer1Wait();
+}
+
 
